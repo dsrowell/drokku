@@ -1,0 +1,18 @@
+{
+    debug
+    admin
+}
+
+DROKKU_HOST {
+    root * /var/www
+    file_server
+    try_files {path} index.html
+    tls {
+        dns route53 {
+            max_retries 10
+            access_key_id AWS_ACCESS_KEY
+            secret_access_key AWS_SECRET_ACCESS_KEY
+            region "us-east-1"
+        }
+    }
+}

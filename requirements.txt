@@ -1,0 +1,8 @@
+requests
+pyyaml
+boto3
+docker
+flask
+flask-cors
+flask-jwt-extended
+psutil

@@ -1,0 +1,36 @@
+#!/usr/bin/sh
+REPO=$PWD
+APP=$(basename $REPO .git)
+
+while read oldrev newrev refname
+do
+  # delete app
+  if [ "$newrev" == "0000000000000000000000000000000000000000" ]; then
+
+    $HOME/venv/bin/python $HOME/drokku.py $APP destroy
+    continue
+
+  # deploy app
+  elif [ "$refname" == "refs/heads/master" ]; then
+
+    workdir=$(mktemp -d gitXXXXXX)
+    (
+      trap "cd $REPO; rm -rf $workfir" EXIT > /dev/null 2>&1
+      unset GIT_DIR
+      unset GIT_QUARANTINE_PATH
+      GIT_WORK_TREE=$workdir git checkout -f $newrev
+      GIT_WORK_TREE=$workdir git reset --hard
+      GIT_WORK_TREE=$workdir git clean -fdx
+      
+      if [ -f "$workdir/Dockerfile" ]; then
+        export BUILD_CONTEXT=$workdir
+        $HOME/venv/bin/python $HOME/drokku.py $APP create
+      else
+        echo "No Dockerfile in $workdir"
+        exit 1
+      fi
+    )
+    rm -rf $workdir
+  fi
+
+done

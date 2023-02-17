@@ -1,0 +1,69 @@
+#!/bin/bash
+
+error() {
+  exit 1
+}
+  
+verlte() {
+  [ "$1" = "$(echo -e "$1\n$2" | sort -V | head -n1)" ]
+}
+
+verlt() {
+  [ "$1" = "$2" ] && return 1 || verlte "$1" "$2"
+}
+
+check_dependencies() {
+  command -v git 1> /dev/null || error "git not installed"
+  verlt "`git --version | cut -d' ' -f3`" "2.31.0" && error "git version too low"
+  echo "git:    OK"
+
+  command -v docker 1> /dev/null || error "docker not installed"
+  verlt "`docker --version | cut -d' ' -f3 | tr -d ','`" "20.10.22" && error "docker version too low"
+  echo "docker: OK"
+
+  command -v caddy 1> /dev/null || error "caddy not installed"
+  verlt "`caddy version | cut -d' ' -f1 | tr -d 'v'`" "2.6.2" && error "caddy version too low"
+  caddy list-modules | grep -q route53 || error "caddy route53 module not installed"
+  echo "caddy:  OK"
+}
+
+install_sshcommand() {
+  cat << EOF > ~/.sshcommand
+###.sshcommand
+EOF
+}
+
+install_pre_receive_common {
+  cat << EOF > ~/pre-receive-common
+###pre-receive-common
+EOF
+}
+
+install_drokku() {
+  cat << EOF > drokku.py
+###drokku.py
+EOF
+  cat << EOF > deploy.py
+###deploy.py
+EOF
+  cat << EOF > caddy.py
+###caddy.py
+EOF
+  cat << EOF > cname.py
+###cname.py
+EOF
+  cat << EOF > drapi.py
+###drapi.py
+EOF
+  cat << EOF > gitwrap.py
+###gitwrap.py
+EOF
+  cat << EOF > requirements.txt
+###requirements.txt
+EOF
+}
+
+check_dependencies
+install_sshcommand
+install_pre_receive_common
+install_drokku
